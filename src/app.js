@@ -31,4 +31,9 @@ app.get("/", (req, res) => {
     res.send("Event management backend run successfully 😊😊");
 });
 
+// import all routers
+import userRoute from "./routers/user.route.js";
+
+app.use("/api/user", userRoute);
+
 export default app;
