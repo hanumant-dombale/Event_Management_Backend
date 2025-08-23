@@ -3,7 +3,7 @@ import DotenvFlow from "dotenv-flow";
 DotenvFlow.config();
 
 export default {
-    ENV: process.env.ENV,
+    NODE_ENV: process.env.NODE_ENV,
 
     PORT: process.env.PORT | 6000,
     ORIGIN: process.env.ORIGIN,
