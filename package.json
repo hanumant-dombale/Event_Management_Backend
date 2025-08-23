@@ -1,7 +1,7 @@
 {
     "name": "event-backend",
     "version": "1.0.0",
-    "description": "This is the Backend folder to event managament project",
+    "description": "This is the Backend folder to event management project",
     "main": "index.js",
     "type": "module",
     "scripts": {

@@ -6,7 +6,6 @@ export default {
     ENV: process.env.ENV,
 
     PORT: process.env.PORT | 6000,
-    SERVER_URI: process.env.SERVER_URI,
     ORIGIN: process.env.ORIGIN,
 
     PGHOST: process.env.PGHOST,

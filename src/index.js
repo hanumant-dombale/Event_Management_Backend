@@ -5,11 +5,13 @@ import app from "./app.js";
 db.sequelize
     .sync({ alter: true }) // Database Connection
     .then(() => {
-        console.log("🚀 Database Connected Succssfully 🚀");
+        console.log("🚀 Database Connected Successfully 🚀");
         app.listen(appConfig.PORT, () => {
-            console.log(`Server is running on port ${appConfig.PORT}`);
+            console.log(
+                `Server is running on port "http://localhost:${appConfig.PORT}"`,
+            );
         });
     })
     .catch((err) => {
-        console.log("❌ Database Connected Faild ❌", err);
+        console.log("❌ Database Connected Failed ❌", err);
     });
