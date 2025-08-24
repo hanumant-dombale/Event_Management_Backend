@@ -151,11 +151,13 @@ const updateUser = async (req, res) => {
 
         const updateUser = await User.findByPk(id);
 
+        const { password: _, ...safeUser } = user.toJSON();
+
         return successResponse(
             res,
             200,
             "Information update successfully.",
-            updateUser.toJSON(),
+            safeUser,
         );
     } catch (error) {
         console.log("Update User Error: ", error);
