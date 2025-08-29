@@ -1,23 +1,38 @@
+import appConfig from "../config/appConfig.js";
 import CustomError from "../utils/customError.js";
 
 const notFound = (req, res, next) => {
     const err = new CustomError(
         `Can't found ${req.method}: ${req.originalUrl} resource.`,
         404,
-        "NOT_FOUND",
     );
 
     next(err);
 };
 
-const globalErrorHandle = (err, req, res, next) => {
-    const error = {
-        success: false,
-        message: err.message,
-        errorCode: err.errorCode,
-    };
+const response = {
+    dev: (res, err) => {
+        return res.status(err.statusCode).json({
+            success: false,
+            message: err.message,
+            errorTrace: err.stack,
+            error: err,
+        });
+    },
+    prod: (res, err) => {
+        return res.status(err.statusCode).json({
+            success: false,
+            message: err.message,
+        });
+    },
+};
 
-    return res.status(err.statusCode).json(error);
+const globalErrorHandle = (err, req, res, next) => {
+    if (appConfig.NODE_ENV === "development") {
+        return response.dev(res, err);
+    }
+
+    return response.prod(res, err);
 };
 
 const asyncErrorHandler = (func) => {
