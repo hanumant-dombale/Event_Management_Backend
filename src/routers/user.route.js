@@ -8,7 +8,7 @@ import {
     getAllUser,
     getUserById,
     deleteUser,
-} from "../controller/user.controller.js";
+} from "../controller/users.controller.js";
 
 const router = Router();
 
