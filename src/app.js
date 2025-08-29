@@ -33,7 +33,15 @@ app.get("/", (req, res) => {
 
 // import all routers
 import userRoute from "./routers/user.route.js";
+import {
+    globalErrorHandle,
+    notFound,
+} from "./middlewares/errorHandlers.middleware.js";
 
+// Add all routes
 app.use("/api/users", userRoute);
+
+app.use(notFound);
+app.use(globalErrorHandle);
 
 export default app;

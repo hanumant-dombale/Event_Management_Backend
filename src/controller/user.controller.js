@@ -2,293 +2,210 @@ import User from "../models/user.model.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import appConfig from "../config/appConfig.js";
-import { errorResponse, successResponse } from "../utils/apiResponse.js";
+import { successResponse } from "../utils/apiResponse.js";
+import { asyncErrorHandler } from "../middlewares/errorHandlers.middleware.js";
+import CustomError from "../utils/customError.js";
 
 // Create the new user
-const registerUser = async (req, res) => {
-    try {
-        const { name, email, password, phone, role } = req.body;
+const registerUser = asyncErrorHandler(async (req, res) => {
+    const { name, email, password, phone, role } = req.body;
 
-        if (!name || !email || !password) {
-            return errorResponse(res, 400, "All info is required");
-        }
+    if (!name || !email || !password) {
+        throw new CustomError("All filed are required.", 400);
+    }
 
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
+        throw new CustomError("User exist with this email.", 400);
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+        name,
+        email,
+        password: hashedPassword,
+        phone,
+        role: role || "participant",
+    });
+
+    // Clean user data before sending
+    const { password: _, ...userData } = user.toJSON();
+
+    return successResponse(
+        res,
+        200,
+        "New user created successfully.",
+        userData,
+    );
+});
+
+const login = asyncErrorHandler(async (req, res) => {
+    const { email, password, role } = req.body;
+
+    if (!email || !password || !role) {
+        throw new CustomError("All data is required.", 400);
+    }
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+        throw new CustomError("User not found with email.", 400);
+    }
+
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
+    if (!isPasswordMatch) {
+        throw new CustomError("Invalid password.", 400);
+    }
+
+    if (role !== user.role) {
+        throw new CustomError("User does't exist with this role.", 400);
+    }
+
+    const payload = {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+    };
+
+    const token = jwt.sign(payload, appConfig.JWT_SECRET, {
+        expiresIn: appConfig.JWT_EXPIRES_IN,
+    });
+
+    // ✅ Set cookie
+    res.cookie("token", token, {
+        httpOnly: true,
+        secure: appConfig.NODE_ENV === "production" ? true : false,
+        sameSite: appConfig.NODE_ENV === "production" ? "None" : "Lax",
+    });
+
+    // ✅ Remove password before sending response
+    const { password: _, ...safeUser } = user.toJSON();
+
+    return successResponse(res, 201, "User login successfully.", {
+        user: safeUser,
+        token,
+    });
+});
+
+const logout = asyncErrorHandler(async (req, res) => {
+    res.clearCookie("token", {
+        httpOnly: true,
+        secure: appConfig.NODE_ENV === "production" ? true : false,
+        sameSite: appConfig.NODE_ENV === "production" ? "None" : "Lax",
+        path: "/",
+    });
+
+    return successResponse(res, 200, "User logout successfully.");
+});
+
+const updateUser = asyncErrorHandler(async (req, res) => {
+    const { id } = req.params;
+    const { name, email, phone } = req.body;
+
+    const user = await User.findByPk(id);
+    if (!user) {
+        throw new CustomError("User not found.", 400);
+    }
+
+    if (email && email !== user.email) {
         const existingUser = await User.findOne({ where: { email } });
         if (existingUser) {
-            return errorResponse(res, 400, "User exist with this email.");
+            throw new CustomError("Email already in use.", 400);
         }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        const user = await User.create({
-            name,
-            email,
-            password: hashedPassword,
-            phone,
-            role: role || "participant",
-        });
-
-        // Clean user data before sending
-        const { password: _, ...userData } = user.toJSON();
-
-        return successResponse(
-            res,
-            200,
-            "New user created successfully.",
-            userData,
-        );
-    } catch (error) {
-        console.error("Register Error:", error);
-        return errorResponse(
-            res,
-            500,
-            "Internal server error while register new user.",
-            error,
-        );
     }
-};
 
-const login = async (req, res) => {
-    try {
-        const { email, password, role } = req.body;
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (phone) user.phone = phone;
 
-        if (!email || !password || !role) {
-            return errorResponse(res, 400, "All data is required.");
-        }
+    await user.save();
 
-        const user = await User.findOne({ where: { email } });
-        if (!user) {
-            return errorResponse(res, 400, "User not found with email.");
-        }
+    const updateUser = await User.findByPk(id);
 
-        const isPasswordMatch = await bcrypt.compare(password, user.password);
-        if (!isPasswordMatch) {
-            return errorResponse(res, 400, "Invalid password.");
-        }
+    const { password: _, ...safeUser } = user.toJSON();
 
-        if (role !== user.role) {
-            return errorResponse(res, 400, "User does't exist with this role.");
-        }
+    return successResponse(
+        res,
+        200,
+        "Information update successfully.",
+        safeUser,
+    );
+});
 
-        const payload = {
-            id: user.id,
-            email: user.email,
-            role: user.role,
-        };
-
-        const token = jwt.sign(payload, appConfig.JWT_SECRET, {
-            expiresIn: appConfig.JWT_EXPIRES_IN,
-        });
-
-        // ✅ Set cookie
-        res.cookie("token", token, {
-            httpOnly: true,
-            secure: appConfig.NODE_ENV === "production" ? true : false,
-            sameSite: appConfig.NODE_ENV === "production" ? "None" : "Lax",
-        });
-
-        // ✅ Remove password before sending response
-        const { password: _, ...safeUser } = user.toJSON();
-
-        return successResponse(res, 201, "User login successfully.", {
-            user: safeUser,
-            token,
-        });
-    } catch (error) {
-        console.log("Login Error: ", error);
-        return errorResponse(
-            res,
-            500,
-            "Internal server error while login user.",
-            error,
-        );
+const forgotPassword = asyncErrorHandler(async (req, res) => {
+    const { id } = req.params;
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+        throw new CustomError("Both are required.", 400);
     }
-};
 
-const logout = async (req, res) => {
-    try {
-        res.clearCookie("token", {
-            httpOnly: true,
-            secure: appConfig.NODE_ENV === "production" ? true : false,
-            sameSite: appConfig.NODE_ENV === "production" ? "None" : "Lax",
-            path: "/",
-        });
-
-        return successResponse(res, 200, "User logout successfully.");
-    } catch (error) {
-        console.log("Logout Error: ", error);
-        return errorResponse(
-            res,
-            500,
-            "Internal server error while logout user.",
-            error,
-        );
+    const user = await User.findByPk(id);
+    if (!user) {
+        throw new CustomError("User not found.", 400);
     }
-};
 
-const updateUser = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { name, email, phone } = req.body;
-
-        const user = await User.findByPk(id);
-        if (!user) {
-            return errorResponse(res, 400, "User not found.");
-        }
-
-        if (email && email !== user.email) {
-            const existingUser = await User.findOne({ where: { email } });
-            if (existingUser) {
-                return errorResponse(res, 400, "Email already in use.");
-            }
-        }
-
-        if (name) user.name = name;
-        if (email) user.email = email;
-        if (phone) user.phone = phone;
-
-        await user.save();
-
-        const updateUser = await User.findByPk(id);
-
-        const { password: _, ...safeUser } = user.toJSON();
-
-        return successResponse(
-            res,
-            200,
-            "Information update successfully.",
-            safeUser,
-        );
-    } catch (error) {
-        console.log("Update User Error: ", error);
-        return errorResponse(
-            res,
-            500,
-            "Internal server error while update user.",
-            error,
-        );
+    const isCurrentPasswordMatch = await bcrypt.compare(
+        currentPassword,
+        user.password,
+    );
+    if (!isCurrentPasswordMatch) {
+        throw new CustomError("Current Password does not match.", 400);
     }
-};
 
-const forgotPassword = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { currentPassword, newPassword } = req.body;
-        if (!currentPassword || !newPassword) {
-            return errorResponse(res, 400, "Both are required.");
-        }
+    const hashPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashPassword;
 
-        const user = await User.findByPk(id);
-        if (!user) {
-            return errorResponse(res, 400, "User not found.");
-        }
+    await user.save();
 
-        const isCurrentPasswordMatch = await bcrypt.compare(
-            currentPassword,
-            user.password,
-        );
-        if (!isCurrentPasswordMatch) {
-            return errorResponse(res, 400, "Current Password does not match.");
-        }
+    return successResponse(res, 200, "Forgot password successfully.");
+});
 
-        const hashPassword = await bcrypt.hash(newPassword, 10);
-        user.password = hashPassword;
-
-        await user.save();
-
-        return successResponse(res, 200, "Forgot password successfully.");
-    } catch (error) {
-        console.log("Forgot Password Error: ", error);
-        return errorResponse(
-            res,
-            500,
-            "Internal server error while forgot password.",
-            error,
-        );
+const getAllUser = asyncErrorHandler(async (req, res) => {
+    const allUser = await User.findAll();
+    if (allUser.length === 0) {
+        throw new CustomError("No user found.", 400);
     }
-};
 
-const getAllUser = async (req, res) => {
-    try {
-        const allUser = await User.findAll();
-        if (allUser.length === 0) {
-            return errorResponse(res, 400, "No user found.");
-        }
+    const safeAllUser = allUser.map((user) => {
+        const { password, ...safeUser } = user.toJSON();
+        return safeUser;
+    });
 
-        const safeAllUser = allUser.map((user) => {
-            const { password, ...safeUser } = user.toJSON();
-            return safeUser;
-        });
+    return successResponse(
+        res,
+        200,
+        "Get all users successfully.",
+        safeAllUser,
+    );
+});
 
-        return successResponse(
-            res,
-            200,
-            "Get all users successfully.",
-            safeAllUser,
-        );
-    } catch (error) {
-        console.log("Get All User Error: ", error);
-        return errorResponse(
-            res,
-            500,
-            "Internal server error while getting all user",
-            error,
-        );
+const getUserById = asyncErrorHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const user = await User.findByPk(id);
+    if (!user) {
+        throw new CustomError("User not found by this id.", 400);
     }
-};
 
-const getUserById = async (req, res) => {
-    try {
-        const { id } = req.params;
+    const { password: _, ...safeUser } = user.toJSON();
 
-        const user = await User.findByPk(id);
-        if (!user) {
-            return errorResponse(res, 400, "User not found by this id.");
-        }
+    return successResponse(res, 200, "Get user by id successfully.", safeUser);
+});
 
-        const { password: _, ...safeUser } = user.toJSON();
+const deleteUser = asyncErrorHandler(async (req, res) => {
+    const { id } = req.params;
 
-        return successResponse(
-            res,
-            200,
-            "Get user by id successfully.",
-            safeUser,
-        );
-    } catch (error) {
-        console.log("Get User By Id Error: ", error);
-        return errorResponse(
-            res,
-            500,
-            "Internal server error while getting user by id.",
-            error,
-        );
+    const user = await User.findByPk(id);
+    if (!user) {
+        throw new CustomError("User not found.", 400);
     }
-};
 
-const deleteUser = async (req, res) => {
-    try {
-        const { id } = req.params;
+    await user.destroy();
 
-        const user = await User.findByPk(id);
-        if (!user) {
-            return errorResponse(res, 400, "User not found.");
-        }
+    const { password: _, ...safeUser } = user.toJSON();
 
-        await user.destroy();
-
-        const { password: _, ...safeUser } = user.toJSON();
-
-        return successResponse(res, 200, "User delete successfully.", safeUser);
-    } catch (error) {
-        console.log("Delete User Error: ", error);
-        return errorResponse(
-            res,
-            500,
-            "Internal server error while deleting user.",
-            error,
-        );
-    }
-};
+    return successResponse(res, 200, "User delete successfully.", safeUser);
+});
 
 export {
     registerUser,
