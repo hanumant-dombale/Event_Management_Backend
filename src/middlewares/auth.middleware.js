@@ -1,6 +1,6 @@
-import CustomError from "../utils/customError";
+import CustomError from "../utils/customError.js";
 import jwt from "jsonwebtoken";
-import { asyncErrorHandler } from "./errorHandlers.middleware";
+import { asyncErrorHandler } from "./errorHandlers.middleware.js";
 
 // ✅ Authentication middleware
 export const authenticate = asyncErrorHandler(async (req, res, next) => {
