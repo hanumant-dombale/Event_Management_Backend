@@ -29,6 +29,7 @@ const response = {
 
 export const globalErrorHandle = (err, req, res, next) => {
     if (appConfig.NODE_ENV === "development") {
+        console.log(`${err.name}: ${err.message}`);
         return response.dev(res, err);
     }
 
