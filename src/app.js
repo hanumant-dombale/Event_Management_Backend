@@ -33,6 +33,7 @@ app.get("/", (req, res) => {
 
 // import all routers
 import userRoute from "./routers/user.route.js";
+import venueRoute from "./routers/venue.route.js";
 import {
     globalErrorHandle,
     notFound,
@@ -40,6 +41,7 @@ import {
 
 // Add all routes
 app.use("/api/users", userRoute);
+app.use("/api/venues", venueRoute);
 
 app.use(notFound);
 app.use(globalErrorHandle);
