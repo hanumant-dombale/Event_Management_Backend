@@ -15,7 +15,7 @@ router.route("/:id/events").get(authenticate, getEventByVenue);
 router.route("/").get(authenticate, getAllVenue);
 
 router.route("/").post(authenticate, createVenue);
-router.route("/:id").post(authenticate, getVenueById);
+router.route("/:id").get(authenticate, getVenueById);
 
 router.route("/:id").put(authenticate, updateVenue);
 

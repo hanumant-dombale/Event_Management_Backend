@@ -13,7 +13,22 @@ const Venue = sequelize.define(
             type: DataTypes.STRING,
             allowNull: false,
         },
-        address: {
+        street: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        city: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        state: {
+            type: DataTypes.STRING,
+        },
+        country: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        zipCode: {
             type: DataTypes.STRING,
         },
     },
