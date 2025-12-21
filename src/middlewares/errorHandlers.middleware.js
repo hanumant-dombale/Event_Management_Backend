@@ -6,30 +6,31 @@ export const notFound = (req, res, next) => {
         `Can't found ${req.method}: ${req.originalUrl} resource.`,
         404,
     );
-
     next(err);
 };
 
 const response = {
     dev: (res, err) => {
-        return res.status(err.statusCode).json({
+        const statusCode = err.statusCode || 500;
+        return res.status(statusCode).json({
             success: false,
-            message: err.message,
+            message: err.message || "Something went wrong",
             errorTrace: err.stack,
             error: err,
         });
     },
     prod: (res, err) => {
-        return res.status(err.statusCode).json({
+        const statusCode = err.statusCode || 500;
+        return res.status(statusCode).json({
             success: false,
-            message: err.message,
+            message: err.message || "Something went wrong",
         });
     },
 };
 
 export const globalErrorHandle = (err, req, res, next) => {
     if (appConfig.NODE_ENV === "development") {
-        console.log(`${err.name}: ${err.message}`);
+        console.error(`${err.name}: ${err.message}`);
         return response.dev(res, err);
     }
 
