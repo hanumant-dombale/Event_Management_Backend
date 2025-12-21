@@ -10,13 +10,25 @@ const sequelize = new Sequelize(
         dialect: appConfig.DIALECT,
         port: appConfig.PGPORT,
         logging: false,
-        dialectOptions: {
-            ssl: {
-                require: true,
-                rejectUnauthorized: false,
-            },
-        },
+        dialectOptions:
+            appConfig.NODE_ENV === "production"
+                ? {
+                      ssl: {
+                          require: true,
+                          rejectUnauthorized: false,
+                      },
+                  }
+                : { ssl: false },
     },
 );
 
 export default sequelize;
+//  dialectOptions: {
+//             ssl: {
+//                 require: false,
+//                 rejectUnauthorized: false,
+//             },
+//         },
+//         dialectOptions: {
+//             ssl: false,
+//         },
