@@ -1,7 +1,7 @@
 import appConfig from "../config/appConfig.js";
 import CustomError from "../utils/customError.js";
 
-const notFound = (req, res, next) => {
+export const notFound = (req, res, next) => {
     const err = new CustomError(
         `Can't found ${req.method}: ${req.originalUrl} resource.`,
         404,
@@ -27,18 +27,17 @@ const response = {
     },
 };
 
-const globalErrorHandle = (err, req, res, next) => {
+export const globalErrorHandle = (err, req, res, next) => {
     if (appConfig.NODE_ENV === "development") {
+        console.log(`${err.name}: ${err.message}`);
         return response.dev(res, err);
     }
 
     return response.prod(res, err);
 };
 
-const asyncErrorHandler = (func) => {
+export const asyncErrorHandler = (func) => {
     return (req, res, next) => {
         func(req, res, next).catch((err) => next(err));
     };
 };
-
-export { notFound, globalErrorHandle, asyncErrorHandler };

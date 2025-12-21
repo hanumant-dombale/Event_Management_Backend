@@ -13,11 +13,13 @@ EventEmitter.defaultMaxListeners = 20;
 
 const applyAssociations = () => {
     Event.belongsTo(User, { foreignKey: "createdBy", as: "creator" });
-    Event.belongsTo(Venue, { foreignKey: "venueId" });
     Event.hasMany(Ticket, { foreignKey: "eventId" });
     Event.hasMany(Registration, { foreignKey: "eventId" });
     Event.hasMany(Invitation, { foreignKey: "eventId" });
     Event.hasMany(Feedback, { foreignKey: "eventId" });
+    Event.belongsTo(Venue, { foreignKey: "venueId", as: "Venue" });
+
+    Venue.hasMany(Event, { foreignKey: "venueId", as: "Events" });
 
     User.hasMany(Event, { foreignKey: "createdBy", as: "createdEvents" });
     User.hasMany(Registration, { foreignKey: "userId" });
