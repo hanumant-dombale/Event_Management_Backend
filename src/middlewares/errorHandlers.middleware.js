@@ -15,8 +15,8 @@ const response = {
         return res.status(statusCode).json({
             success: false,
             message: err.message || "Something went wrong",
-            errorTrace: err.stack,
             error: err,
+            errorTrace: err.stack,
         });
     },
     prod: (res, err) => {
