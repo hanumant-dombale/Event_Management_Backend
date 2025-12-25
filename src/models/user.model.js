@@ -24,10 +24,23 @@ const User = sequelize.define(
         },
         phone: {
             type: DataTypes.STRING,
+            allowNull: true,
         },
         role: {
             type: DataTypes.ENUM("admin", "organizer", "participant"),
             defaultValue: "participant",
+        },
+        profileImage: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        lastLogin: {
+            type: DataTypes.DATE,
+            allowNull: true,
+        },
+        isActive: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: true,
         },
     },
     {
