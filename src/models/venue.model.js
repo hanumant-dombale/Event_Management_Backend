@@ -31,6 +31,10 @@ const Venue = sequelize.define(
         zipCode: {
             type: DataTypes.STRING,
         },
+        isActive: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: true,
+        },
     },
     {
         timestamps: true,
