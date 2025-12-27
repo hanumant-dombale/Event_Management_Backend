@@ -1,5 +1,5 @@
 import { Sequelize } from "sequelize";
-import appConfig from "../config/appConfig.js";
+import appConfig from "./appConfig.js";
 
 const sequelize = new Sequelize(
   appConfig.PGDATABASE,
@@ -23,12 +23,3 @@ const sequelize = new Sequelize(
 );
 
 export default sequelize;
-//  dialectOptions: {
-//             ssl: {
-//                 require: false,
-//                 rejectUnauthorized: false,
-//             },
-//         },
-//         dialectOptions: {
-//             ssl: false,
-//         },
