@@ -29,4 +29,47 @@ const loginUserService = async ({ email, password, role }) => {
   return { user: safeUser, token };
 };
 
-export { loginUserService };
+const changePasswordService = async (userId, data) => {
+  const { currentPassword, newPassword } = data;
+
+  if (!currentPassword || !newPassword) {
+    throw new CustomError(
+      "Current password and new password are required.",
+      400,
+    );
+  }
+
+  const user = await User.findOne({
+    where: { id: userId, isActive: true },
+  });
+
+  if (!user) {
+    throw new CustomError("User not found.", 404);
+  }
+
+  const isPasswordMatch = await bcrypt.compare(currentPassword, user.password);
+
+  if (!isPasswordMatch) {
+    throw new CustomError("Current password is incorrect.", 401);
+  }
+
+  const isSamePassword = await bcrypt.compare(newPassword, user.password);
+
+  if (isSamePassword) {
+    throw new CustomError(
+      "New password must be different from the current password.",
+      400,
+    );
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  user.password = hashedPassword;
+  await user.save();
+
+  return {
+    message: "Password updated successfully.",
+  };
+};
+
+export { loginUserService, changePasswordService };
