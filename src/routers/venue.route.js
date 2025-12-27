@@ -1,9 +1,9 @@
 import { Router } from "express";
 import {
-    createVenue,
-    updateVenue,
-    deleteVenue,
-    getVenues,
+  createVenue,
+  updateVenue,
+  deleteVenue,
+  getVenues,
 } from "../controllers/venue.controller.js";
 import { authenticate } from "../middlewares/auth.middleware.js";
 

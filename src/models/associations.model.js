@@ -12,32 +12,32 @@ import { EventEmitter } from "events";
 EventEmitter.defaultMaxListeners = 20;
 
 const applyAssociations = () => {
-    Event.belongsTo(User, { foreignKey: "createdBy", as: "creator" });
-    Event.hasMany(Ticket, { foreignKey: "eventId" });
-    Event.hasMany(Registration, { foreignKey: "eventId" });
-    Event.hasMany(Invitation, { foreignKey: "eventId" });
-    Event.hasMany(Feedback, { foreignKey: "eventId" });
-    Event.belongsTo(Venue, { foreignKey: "venueId", as: "Venue" });
+  Event.belongsTo(User, { foreignKey: "createdBy", as: "creator" });
+  Event.hasMany(Ticket, { foreignKey: "eventId" });
+  Event.hasMany(Registration, { foreignKey: "eventId" });
+  Event.hasMany(Invitation, { foreignKey: "eventId" });
+  Event.hasMany(Feedback, { foreignKey: "eventId" });
+  Event.belongsTo(Venue, { foreignKey: "venueId", as: "Venue" });
 
-    Venue.hasMany(Event, { foreignKey: "venueId", as: "Events" });
+  Venue.hasMany(Event, { foreignKey: "venueId", as: "Events" });
 
-    User.hasMany(Event, { foreignKey: "createdBy", as: "createdEvents" });
-    User.hasMany(Registration, { foreignKey: "userId" });
-    User.hasMany(Invitation, { foreignKey: "senderId" });
-    User.hasMany(Feedback, { foreignKey: "userId" });
+  User.hasMany(Event, { foreignKey: "createdBy", as: "createdEvents" });
+  User.hasMany(Registration, { foreignKey: "userId" });
+  User.hasMany(Invitation, { foreignKey: "senderId" });
+  User.hasMany(Feedback, { foreignKey: "userId" });
 
-    Ticket.belongsTo(Event, { foreignKey: "eventId" });
-    Ticket.hasMany(Registration, { foreignKey: "ticketId" });
+  Ticket.belongsTo(Event, { foreignKey: "eventId" });
+  Ticket.hasMany(Registration, { foreignKey: "ticketId" });
 
-    Registration.belongsTo(User, { foreignKey: "userId" });
-    Registration.belongsTo(Event, { foreignKey: "eventId" });
-    Registration.belongsTo(Ticket, { foreignKey: "ticketId" });
+  Registration.belongsTo(User, { foreignKey: "userId" });
+  Registration.belongsTo(Event, { foreignKey: "eventId" });
+  Registration.belongsTo(Ticket, { foreignKey: "ticketId" });
 
-    Invitation.belongsTo(User, { foreignKey: "senderId" });
-    Invitation.belongsTo(Event, { foreignKey: "eventId" });
+  Invitation.belongsTo(User, { foreignKey: "senderId" });
+  Invitation.belongsTo(Event, { foreignKey: "eventId" });
 
-    Feedback.belongsTo(User, { foreignKey: "userId" });
-    Feedback.belongsTo(Event, { foreignKey: "eventId" });
+  Feedback.belongsTo(User, { foreignKey: "userId" });
+  Feedback.belongsTo(Event, { foreignKey: "eventId" });
 };
 
 export default applyAssociations;
