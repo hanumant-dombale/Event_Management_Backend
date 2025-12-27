@@ -2,7 +2,9 @@ import { asyncErrorHandler } from "../middlewares/errorHandlers.middleware.js";
 import { successResponse } from "../utils/apiResponse.js";
 import {
   changePasswordService,
+  forgotPasswordRequestService,
   loginUserService,
+  resetPasswordWithOtpService,
 } from "../services/auth.service.js";
 import appConfig from "../config/appConfig.js";
 
@@ -46,4 +48,26 @@ const changePassword = asyncErrorHandler(async (req, res) => {
   return successResponse(res, 200, "Password updated successfully.");
 });
 
-export { loginUser, logoutUser, changePassword };
+const forgotPasswordRequest = asyncErrorHandler(async (req, res) => {
+  const { email } = req.body;
+
+  await forgotPasswordRequestService(email);
+
+  return successResponse(res, 200, "OTP sent to your registered email.");
+});
+
+const resetPasswordWithOtp = asyncErrorHandler(async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+
+  await resetPasswordWithOtpService({ email, otp, newPassword });
+
+  return successResponse(res, 200, "Password reset successfully.");
+});
+
+export {
+  loginUser,
+  logoutUser,
+  changePassword,
+  forgotPasswordRequest,
+  resetPasswordWithOtp,
+};
