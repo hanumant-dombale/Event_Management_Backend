@@ -1,5 +1,5 @@
 import Sequelize from "sequelize";
-import sequelize from "../database/connetion.js";
+import sequelize from "../config/database.js";
 
 // Import models
 import User from "./user.model.js";

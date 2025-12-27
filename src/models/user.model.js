@@ -1,5 +1,5 @@
 import { DataTypes } from "sequelize";
-import sequelize from "../database/connetion.js";
+import sequelize from "../config/database.js";
 
 const User = sequelize.define(
   "User",
@@ -35,6 +35,14 @@ const User = sequelize.define(
       allowNull: true,
     },
     lastLogin: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    resetOtp: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    resetOtpExpiry: {
       type: DataTypes.DATE,
       allowNull: true,
     },
