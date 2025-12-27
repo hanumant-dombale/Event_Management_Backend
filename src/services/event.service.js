@@ -160,7 +160,6 @@ const getEventsService = async (query) => {
     order = "DESC",
   } = query;
 
-  // 1. WHERE condition (same pattern as venues)
   const where = { isActive: true };
 
   if (id) where.id = id;
