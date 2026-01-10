@@ -16,6 +16,7 @@ export default {
         "ci",
         "chore",
         "revert",
+        "remove",
       ],
     ],
     "subject-case": [2, "always", "sentence-case"],
