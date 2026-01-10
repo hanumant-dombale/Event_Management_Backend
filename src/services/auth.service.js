@@ -1,17 +1,20 @@
-import User from "../models/user.model.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { randomInt } from "crypto";
 import appConfig from "../config/appConfig.js";
 import CustomError from "../utils/customError.js";
-import { sendEmail } from "../utils/email/sendEmail.js";
+import { sendEmail } from "../services/email.service.js";
+import User from "../models/user.model.js";
 
 const generateOtp = () => randomInt(100000, 999999).toString();
 
 const hashValue = async (value) =>
   bcrypt.hash(value, appConfig.BCRYPT_SALT_ROUNDS);
 
-const compareValue = async (value, hash) => bcrypt.compare(value, hash);
+const compareValue = async (value, hash) => {
+  if (!value || !hash) return false;
+  return bcrypt.compare(String(value), String(hash));
+};
 
 const generateToken = (user) =>
   jwt.sign(
@@ -97,7 +100,15 @@ const forgotPasswordRequestService = async (email) => {
   user.resetOtpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
   await user.save();
-  await sendEmail(user.email, otp);
+
+  await sendEmail({
+    to: user.email,
+    templateKey: "PASSWORD_RESET",
+    variables: {
+      otp,
+      expiry: appConfig.OTP_EXPIRES_IN_MINUTES,
+    },
+  });
 
   return true;
 };
@@ -117,6 +128,7 @@ const resetPasswordWithOtpService = async ({ email, otp, newPassword }) => {
   if (!isOtpValid) {
     throw new CustomError("Invalid OTP.", 400);
   }
+  // console.log("hanumanty");
 
   user.password = await hashValue(newPassword);
   user.resetOtp = null;
