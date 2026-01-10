@@ -9,6 +9,7 @@ import Ticket from "./ticket.model.js";
 import Registration from "./registration.model.js";
 import Invitation from "./invitation.model.js";
 import Feedback from "./feedback.model.js";
+import EmailTemplate from "./email.model.js";
 
 // Assign models to Sequelize instance
 const db = {};
@@ -21,6 +22,7 @@ db.Ticket = Ticket;
 db.Registration = Registration;
 db.Invitation = Invitation;
 db.Feedback = Feedback;
+db.EmailTemplate = EmailTemplate;
 
 // Apply associations
 import applyAssociations from "./associations.model.js";

@@ -36,12 +36,14 @@ import userRoute from "./routers/user.route.js";
 import venueRoute from "./routers/venue.route.js";
 import eventRoute from "./routers/event.route.js";
 import authRoute from "./routers/auth.route.js";
+import emailRoute from "./routers/email.route.js";
 
 // Add all routes
 app.use("/api/auth", authRoute);
 app.use("/api/users", userRoute);
 app.use("/api/events", eventRoute);
 app.use("/api/venues", venueRoute);
+app.use("/api/emails", emailRoute);
 
 // import error handlers
 import {
